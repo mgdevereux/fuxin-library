@@ -79,13 +79,19 @@ switch kernel_name
       otherwise
         error('Unknown method!');
     end
+  case 'jensen_shannon'
+    if ~strcmp(options.method,'signals')
+        error('We have not yet developed the sampling for Jensen-Shannon kernel.');
+    end
+    obj.distribution = 'period';
   otherwise
     error('Unknown kernel.');
 end
 
 obj = rf_sample(obj);
 obj.beta = rand(Napp,1); % 
-if strcmp(options.method,'signals') && (~isfield(obj,'name') || ~strcmp(obj.name,'exp_chi2'))
+% These are fixed dimension ones
+if (strcmp(options.method,'signals') || strcmp(options.method,'chebyshev')) && (~isfield(obj,'name') || ~strcmp(obj.name,'exp_chi2'))
     obj.final_dim = obj.Nperdim * obj.dim;
 else
     obj.final_dim = Napp;
