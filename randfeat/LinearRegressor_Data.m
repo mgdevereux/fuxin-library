@@ -22,10 +22,10 @@
 % L1.PCA(d);
 %% to get d eigenvectors
 %
-%% For Group Lasso, use:
+%% For Lasso/Group Lasso, use:
 % L1.GroupLasso(Lambda, groups);
 %% where Lambda is the regularization parameter and groups specify which variates are grouped together. groups = 1:D gives regular LASSO.
-% Currently this version only supports dense matrices.
+% Currently only Regress supports sparse matrices. Group LASSO supports only dense matrices.
 
 classdef LinearRegressor_Data < handle
     properties
@@ -92,13 +92,22 @@ classdef LinearRegressor_Data < handle
             d = size(Hes,1);
             
             Weight = cell(size(obj.InputTarget,2),1);
+            if exist('Reg_Mat','var') && ~isempty(Reg_Mat)
+                Reg_Hes = Hes + Lambda * [1 zeros(1,d-1);zeros(d-1,1) Reg_Mat];
+            else
+                if ~issparse(Hes)
+                    Reg_Hes = Hes + Lambda * eye(d);
+                else
+                    Reg_Hes = Hes + Lambda * speye(d);
+                end
+            end
             for i=1:size(obj.InputTarget,2)
                 disp(['Regressing the ' int2str(i) '-th output']);
                 t = tic();
-                if exist('Reg_Mat','var') && ~isempty(Reg_Mat)
-                    Weight{i} = (Hes + Lambda*[1 zeros(1,d-1);zeros(d-1,1) Reg_Mat])\obj.InputTarget(:,i);
+                if issparse(Hes)
+                    Weight{i} = bicgstab(Reg_Hes, InputTarget(:,i),1e-6,500);
                 else
-                    Weight{i} = (Hes + Lambda*eye(d))\obj.InputTarget(:,i);
+                    Weight{i} = Reg_Hes\obj.InputTarget(:,i);
                 end
                 toc(t);
             end
