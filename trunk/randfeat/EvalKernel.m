@@ -73,10 +73,10 @@ case 'cauchy'
     dist2 = a*ones(1,L2) + ones(L1,1)*b' - 2*samples1*samples2';
     K = kernelparam./(kernelparam + dist2);
 case 'chi2'
-    K = chi2_mex(samples1',samples2');
+    K = chi2_mex(single(samples1)',single(samples2)');
     K = (repmat(sum(samples1,2),1,L2)  + repmat(sum(samples2,2)',L1,1) - K) / 2;
 case 'exp_chi2'
-    K = chi2_mex(samples1',samples2');
+    K = chi2_mex(single(samples1)',single(samples2)');
     K = exp(- kernelparam * K);
 case 'chi2_skewed'
     K = chi2_mex_scinv(samples1',samples2',single(kernelparam(1))); % FIXME modified NIPS2010
