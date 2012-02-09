@@ -13,7 +13,8 @@ function F = rf_featurize(obj, X, Napp)
 if ~exist('Napp','var')
     Napp = obj.Napp;
 end
-   if strcmp(obj.name,'exp_chi2')
+% Use mex_featurize if it's exp-chi2 and not Nystrom method.
+   if strcmp(obj.name,'exp_chi2') && ~strcmp(obj.method,'nystrom')
        if isfield(obj,'omega2')
            obj.omega2 = obj.omega2';
        end
@@ -112,6 +113,14 @@ switch obj.name
             end
             F(isnan(F)) = 0;
             F(isinf(F)) = 0;
+		 elseif strcmp(obj.method, 'nystrom')
+             if strcmp(obj.name,'exp_chi2')
+		         F = EvalKernel(X, obj.omega(:,1:Napp)', obj.name, obj.kernel_param);
+             else
+                 F = EvalKernel(X, obj.omega(:,1:Napp)', obj.name);
+             end
+			% Early return with Nystrom. Don't do the next step!
+             return;
          end
          F(isinf(F)) = 0;
          F(isnan(F)) = 0;

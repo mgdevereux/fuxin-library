@@ -80,11 +80,11 @@ switch kernel
     if ~isfield(options,'method')
         options.method = 'chebyshev';
     end
-    if ~isfield(options,'period')
-        options.period = 0.4;
-    end
     if ~isfield(options,'Nperdim')
         options.Nperdim = 9;
+    end
+    if ~isfield(options,'period')
+        options.period = 1 / sqrt(2 * (options.Nperdim+1));
     end
     obj = rf_init('exp_chi2', alpha, D, Napp, options);
   otherwise
