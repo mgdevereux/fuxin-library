@@ -12,6 +12,7 @@ function obj = rf_init( kernel_name, kernel_param, dim, Napp, options)
 %                         and Zisserman 2010] type of fixed interval sampling. 
 %                         'sampling' for [Rahimi and Recht 2007] type of 
 %                         Monte Carlo sampling.
+%         options.anchors: User-supplied anchors for using the Nystrom method.
 %
 %
 % copyright (c) 2010 
@@ -76,6 +77,14 @@ switch kernel_name
         obj.distribution = 'exp_chi2';
       case 'sampling'
         error('Not yet implemented');
+	  case 'nystrom'
+		% Use user-supplied anchors and do not do sampling.
+        if ~isfield(obj,'omega')
+            error('Cannot do Nystrom without specifying the anchors as omega!');
+        end
+		obj.Napp = size(obj.omega,2);
+        obj.final_dim = size(obj.omega,2);
+		return;
       otherwise
         error('Unknown method!');
     end
