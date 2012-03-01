@@ -1,6 +1,7 @@
 % LinearRegressor_Data class supports an out-of-core linear regressor where the data cannot be loaded into memory.
 % Usage example:
 
+% L1 = LinearRegressor_Data(Input, Target);
 % L1 = LinearRegressor_Data(Input, Target, Weights);
 
 %% Input is an n*D data matrix, with n training points in D dimensions. Target is n * c, where c is the number of output dimensions. Weights is an optional n * 1 vector for the weight on each training point.
@@ -9,7 +10,7 @@
 % 
 % L1 = L1 + LinearRegressor_Data(Input2, Target2, Weights2);
 %
-% %You may also do a weighted addition since scalar multiplication is also implemented:
+% %You may also do a weighted addition since scalar multiplication has also been implemented:
 %
 % L1 = 3 * L1 + 2 * LinearRegressor_Data(Input2, Target2, Weights2);
 %
