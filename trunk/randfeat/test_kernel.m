@@ -3,20 +3,18 @@ function test_kernel(x,y, kernel_type, kernel_par, Napp, options)
 % x,y are input feature matrices. Each row is an example
 % kernel_type is among 'linear', 'rbf' (Gaussian), 'laplace' (Laplacian)
 % 'chi2' (Chi-square), 'chi2_skewed' (Skewed chi-square), 'intersection'
-% (Histogram intersection), 'intersection_skewed' (Skewed intersection)
+% (Histogram intersection), 'intersection_skewed' (Skewed intersection),
+% 'exp-chi2' (Exponentiated chi-square).
 % kernel_par is the kernel parameter.
 % Napp is the number of random feature dimensions, for options.method = signals,
 % the final dimensionality would be (2*floor(Napp/2) + 1) * input_dimension
 % (the Napp is the number of approximation terms per dimension without the 
 % central term).
-% options: options. Now including only: 
-%         options.method: 'sampling' or 'signals', signals for [Vedaldi 
-%                         and Zisserman 2010] type of fixed interval sampling. 
-%                         'sampling' for [Rahimi and Recht 2007, Li and Ionescu
-%                         and Sminchisescu 2010] type of Monte Carlo sampling.
+% options: options. See the help of InitExplicitKernel for the possible
+% options.
 %
-% copyright (c) 2010 
-% Fuxin Li - fuxin.li@ins.uni-bonn.de
+% copyright (c) 2010 - 2012
+% Fuxin Li - fli@cc.gatech.edu
 % Catalin Ionescu - catalin.ionescu@ins.uni-bonn.de
 % Cristian Sminchisescu - cristian.sminchisescu@ins.uni-bonn.de
 

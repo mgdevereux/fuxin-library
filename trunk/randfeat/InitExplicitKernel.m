@@ -12,14 +12,27 @@ function obj = InitExplicitKernel( kernel, alpha, D, Napp, options )
 %        for the Gaussian.
 % D      - the number of dimensions
 % Napp 	 - the number of random points you want to sample
-% options: options. Now including only: 
-%         options.method: 'sampling' or 'signals', signals for [Vedaldi 
-%                         and Zisserman 2010] type of fixed interval sampling. 
+% options: options. Including:
+%         options.method: 'sampling','signals' or 'nystrom'.
+%                         'signals' for [Vedaldi and Zisserman 2012]-type 
+%                                   fixed interval sampling. 
 %                         'sampling' for [Rahimi and Recht 2007] type of 
-%                         Monte Carlo sampling.
+%                                    Monte Carlo sampling.
+%                         'nystrom' for Nystrom sampling (user has to
+%                                   specify the anchors). For Nystrom, PCA 
+%                                   is only performed if you call rf_pca_featurize.
+%                                   If rf_featurize is called, then the program
+%                                   simply evaluates the kernel between examples 
+%                                   and anchor points.
+%         options.Nperdim: Number of samples per dimension for additive
+%                          kernels.
+%         options.period: The parameter for [Vedaldi and Zisserman
+%                         2012]-type fixed interval sampling.
+%         options.omega: User-supplied anchors for using the Nystrom method 
+%                        (Only useful for the Nystrom method).
 %
-% copyright (c) 2010 
-% Fuxin Li - fuxin.li@ins.uni-bonn.de
+% copyright (c) 2010-2012
+% Fuxin Li - fli@cc.gatech.edu
 % Catalin Ionescu - catalin.ionescu@ins.uni-bonn.de
 % Cristian Sminchisescu - cristian.sminchisescu@ins.uni-bonn.de
 
@@ -45,15 +58,15 @@ switch kernel
   case 'chi2'
     if ~isfield(options, 'method')
       options.method = 'signals';
-      if ~isfield(options,'period') || isempty(options.period)
-        options.period = 4e-1;
-      end
       if ~isfield(options,'Nperdim') || isempty(options.Nperdim)
         options.Nperdim = 7;
       end
+      if ~isfield(options,'period') || isempty(options.period)
+        options.period = 1 / sqrt(2 * (options.Nperdim+1));
+      end
     elseif strcmp(options.method,'chebyshev')
         if ~isfield(options,'Nperdim') || isempty(options.Nperdim)
-            options.Nperdim = 50;
+            options.Nperdim = 10;
         end
     end
     obj = rf_init('chi2', alpha, D, Napp, options);
@@ -63,6 +76,12 @@ switch kernel
     obj.name = 'chi2_skewed';
     
   case 'intersection'
+      if ~isfield(options,'Nperdim') || isempty(options.Nperdim)
+        options.Nperdim = 7;
+      end
+      if ~isfield(options,'period') || isempty(options.period)
+          options.period = 6e-1;
+      end
     obj = rf_init('intersection', alpha, D, Napp, options);
   
   case 'intersection_skewed'

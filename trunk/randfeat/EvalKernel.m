@@ -1,4 +1,20 @@
 function K = EvalKernel(samples1, samples2, kernel, kernelparam)
+%EVALKERNEL Fastly Evaluate kernel function between samples1 and samples2
+% matrix.
+%
+% samples1, samples2 - two feature matrices, with each row being an example
+%                    kernel is among 'linear', 'rbf' (Gaussian), 'laplace' 
+%                    (Laplacian) 'chi2' (Chi-square), 'chi2_skewed' (Skewed 
+%                    chi-square), 'intersection' (Histogram intersection), 
+%                    'intersection_skewed' (Skewed intersection),
+%                    'exp_chi2' (Exponentitated chi-square).
+% kernelparam        - kernel parameter (semantic depends on the kernel)
+%
+% copyright (c) 2010-2012
+% Fuxin Li - fli@cc.gatech.edu
+% Catalin Ionescu - catalin.ionescu@ins.uni-bonn.de
+% Cristian Sminchisescu - cristian.sminchisescu@ins.uni-bonn.de
+
 % Fastly Evaluate kernel function
 
 if (size(samples1,2)~=size(samples2,2))
@@ -8,8 +24,6 @@ end
 [L2, dim] = size(samples2);
 
 switch kernel
-case 'nonkernel'
-    K = samples1;
 case 'dist2'
     a = sum(samples1.*samples1,2);
     b = sum(samples2.*samples2,2);
@@ -38,69 +52,56 @@ case 'rbf'
         dist2 = dist2 - 2*(samples1.*repmat(kernelparam',L1,1))*samples2';
         K = exp(-dist2);
     end
-case 'convrbf'
-    a = sum(samples1.*samples1,2);
-    b = sum(samples2.*samples2,2);
-    fftsamples1 = fft(fliplr(samples1),[],2);
-    fftsamples2 = fft(samples2,[],2);
-    dist2 = zeros(L1,L2);
-    for i = 1:L1
-        dist2(i,:) = (a(i)*ones(L2,1) + b - 2*max(ifft(repmat(fftsamples1(i,:),L2,1).*fftsamples2,[],2),[],2))';
-    end
-    K = exp(-dist2);
-case 'kfrbf'
-    K = zeros(L1,L2);
-    for i = 1:L1
-        tsamples = ones(L2,1)*samples1(i,:);
-        K(i,:) = (sum((tsamples - samples2).^2./( tsamples + samples2 + eps),2))';
-    end
-    K = exp(-kernelparam*K);
 case 'laplace'
     K = zeros(L1,L2);
     for i = 1:L1
         K(i,:) = (sum(abs(repmat(samples1(i,:),L2,1) - samples2),2))';
     end
     K = exp(-kernelparam*K);
-case 'wave'
-    K = zeros(L1,L2);
-    for i = 1:L1
-        temp = repmat(samples1(i,:),L2,1);
-        K(i,:) = exp(-kernelparam*sum((temp-samples2).^2,2)).*prod(cos(1.75*sqrt(2*kernelparam)*(temp-samples2)),2);
+case {'chi2','exp_chi2'}
+    addpath('./utils');
+    % if the mex file is not available for your architecture
+    try 
+      K = chi2_mex(samples1',samples2');
+      K = (repmat(sum(samples1,2),1,L2)  + repmat(sum(samples2,2)',L1,1) - K) / 2;
+    catch E
+      disp(E);
+      K = zeros(L1, L2);
+      for i = 1: L1
+        si = repmat(samples1(i,:),[L2 1]);
+        K(i,:) = 2*sum(si.*samples2 ./(si+samples2 +1e-20),2);
+      end
     end
-case 'cauchy'
-    a = sum(samples1.*samples1,2);
-    b = sum(samples2.*samples2,2);
-    dist2 = a*ones(1,L2) + ones(L1,1)*b' - 2*samples1*samples2';
-    K = kernelparam./(kernelparam + dist2);
-case 'chi2'
-    K = chi2_mex(single(samples1)',single(samples2)');
-    K = (repmat(sum(samples1,2),1,L2)  + repmat(sum(samples2,2)',L1,1) - K) / 2;
-case 'exp_chi2'
-    K = chi2_mex(single(samples1)',single(samples2)');
-    K = exp(- kernelparam * K);
-case 'chi2_skewed'
-    K = chi2_mex_scinv(samples1',samples2',single(kernelparam(1))); % FIXME modified NIPS2010
-    if length(kernelparam)>1
-      K = K.^kernelparam(2);
+    if strcmpi(kernel,'exp_chi2')
+        K = exp(- kernelparam * K);
     end
-case 'nn'
-    K = tanh(samples1*samples2');
+case 'chi2_skewed'    
+    addpath('./utils/');
+    % if the mex file is not available for your architecture
+    try
+      K = chi2_mex_scinv(samples1',samples2',single(kernelparam));
+    catch E
+      disp(E);
+      K = zeros(L1, L2);
+      samples1 = double(samples1);
+      samples2 = double(samples2);
+      for i = 1: L1
+        si = repmat(samples1(i,:),[L2 1]);
+        K(i,:) = sqrt( prod(4*(si + kernelparam).*(samples2 + kernelparam)./(si+samples2 +2*kernelparam).^2,2));
+      end
+    end
 case 'intersection'
-    warning('Not verified');
     K = zeros(L1, L2);
     for i = 1: L1
       si = repmat(samples1(i,:),[L2 1]);
       K(i,:) = sum(min(si,samples2),2);
     end
 case 'intersection_skewed'
-    addpath('./utils/');
-    K = skewhist_mex(samples1',samples2',single(kernelparam));
-case 'hellinger'
-    warning('Not verified');
-    K = zeros(L1, L2);
-    for i = 1: L1
-      si = repmat(samples1(i,:),[L2 1]);
-      K(i,:) = min(si,samples2);
+    addpath('./utils/');   
+    try
+      K = skewhist_mex(samples1',samples2',single(kernelparam));
+    catch E
+      disp(E);
     end
     
 otherwise
