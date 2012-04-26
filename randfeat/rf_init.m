@@ -1,22 +1,35 @@
 function obj = rf_init( kernel_name, kernel_param, dim, Napp, options)
 %RF_INIT initialize the kernel with the right parameters and sample in
 %order to get the fourier features
+% NOTE: Usually you should call the wrapper function InitExplicitKernel for 
+% default values and correct kernel mappings.
 %
 % kernel_name : supported kernel i.e. 'gaussian', 'laplace', 'chi2',
 % 'intersection'
 % kernel_param : parameter for the kernel
 % dim : dimensionality of the features
 % Napp : number of samples for the approximation
-% options: options. Now including only: 
-%         options.method: 'sampling' or 'signals', signals for [Vedaldi 
-%                         and Zisserman 2010] type of fixed interval sampling. 
+% options: options. Including:
+%         options.method: 'sampling','signals' or 'nystrom'.
+%                         'signals' for [Vedaldi and Zisserman 2012]-type 
+%                                   fixed interval sampling. 
 %                         'sampling' for [Rahimi and Recht 2007] type of 
-%                         Monte Carlo sampling.
-%         options.anchors: User-supplied anchors for using the Nystrom method.
+%                                    Monte Carlo sampling.
+%                         'nystrom' for Nystrom sampling (user has to
+%                                   specify the anchors). For Nystrom, PCA 
+%                                   is only performed if you call rf_pca_featurize.
+%                                   If rf_featurize is called, then the program
+%                                   simply evaluates the kernel between examples 
+%                                   and anchor points.
+%         options.Nperdim: Number of samples per dimension for additive
+%                          kernels.
+%         options.period: The parameter for [Vedaldi and Zisserman
+%                         2012]-type fixed interval sampling.
+%         options.omega: User-supplied anchors for using the Nystrom method 
+%                        (Only useful for the Nystrom method ).
 %
-%
-% copyright (c) 2010 
-% Fuxin Li - fuxin.li@ins.uni-bonn.de
+% copyright (c) 2010-2012
+% Fuxin Li - fli@cc.gatech.edu
 % Catalin Ionescu - catalin.ionescu@ins.uni-bonn.de
 % Cristian Sminchisescu - cristian.sminchisescu@ins.uni-bonn.de
 
@@ -61,7 +74,6 @@ switch kernel_name
     switch options.method
       case 'signals'
         obj.distribution = 'period';
-        obj.period = 6e-1;
       case 'sampling'
         obj.distribution = 'cauchy';
         obj.kernel_param = 0.5;
@@ -72,7 +84,6 @@ switch kernel_name
     switch options.method
       case 'signals'
         obj.distribution = 'exp_chi2';
-        obj.period = 8e-1;
       case 'chebyshev'
         obj.distribution = 'exp_chi2';
       case 'sampling'

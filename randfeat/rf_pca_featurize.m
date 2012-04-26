@@ -1,4 +1,13 @@
 function [F, rf_obj] = rf_pca_featurize(rf_obj, x,train_pca, Npcadim, Napp)
+% RF_PCA_FEATURIZE:
+% Featurize the random features with PCA.
+%      rf_obj: randfeat object obtained with InitExplicitKernel
+%           x: n (examples) * d (dimensions) input matrix.
+%   train_pca: whether training PCA basis vectors or testing.
+%     Npcadim: number of dimensions after PCA, only useful in training
+%              time.
+%        Napp: optional parameter. Only useful if taking less random
+%              dimensions than the ones specified in rf_obj.
 % The returned rf_obj will contain the PCA means and bases.
 %
 % This function has two functionalities: if train_pca is on, it overwrites
@@ -9,9 +18,10 @@ function [F, rf_obj] = rf_pca_featurize(rf_obj, x,train_pca, Npcadim, Napp)
 %
 % Npcadim doesn't need to be specified during test time.
 %
-% Napp is temporary, if PCA works, will implement an incremental SVD so
-% that we can extract even more random vectors but still return a vector with
-% Npcadim length.
+% copyright (c) 2010 - 2012
+% Fuxin Li - fli@cc.gatech.edu
+% Catalin Ionescu - catalin.ionescu@ins.uni-bonn.de
+% Cristian Sminchisescu - cristian.sminchisescu@ins.uni-bonn.de
     if exist('Napp','var')
         F = rf_featurize(rf_obj, x, Napp);
     else

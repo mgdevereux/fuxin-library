@@ -1,32 +1,48 @@
-% LinearRegressor_Data class supports an out-of-core linear regressor where the data cannot be loaded into memory.
+% LinearRegressor_Data class supports an out-of-core linear regressor where 
+% the data cannot be loaded into memory.
 % Usage example:
 
 % L1 = LinearRegressor_Data(Input, Target);
 % L1 = LinearRegressor_Data(Input, Target, Weights);
 
-%% Input is an n*D data matrix, with n training points in D dimensions. Target is n * c, where c is the number of output dimensions. Weights is an optional n * 1 vector for the weight on each training point.
+% Input is an n*D data matrix, with n training points in D dimensions. 
+% Target is n * c, where c is the number of output dimensions. Weights is 
+% an optional n * 1 vector for the weight on each training point.
 %
 % %Other training data can be added to L1:
 % 
-% L1 = L1 + LinearRegressor_Data(Input2, Target2, Weights2);
+% L1 = L1 + LinearRegressor_Data(Input2, Target2);
 %
-% %You may also do a weighted addition since scalar multiplication has also been implemented:
+% %You may also do a weighted addition since scalar multiplication has also 
+% been implemented:
 %
-% L1 = 3 * L1 + 2 * LinearRegressor_Data(Input2, Target2, Weights2);
+% L1 = 3 * L1 + 2 * LinearRegressor_Data(Input2, Target2);
 %
-% %After building L1 up, you can choose from different regressors. Now implemented are ridge regression, group lasso and PCA. For ridge regression, just use:
+% After building L1 up, you can choose from different regressors. Now 
+% implemented are ridge regression, group lasso and PCA. 
+%% For least squares/ridge regression, just use:
 %
 % L1.Regress(Lambda);
-%% Lambda is the ridge regression weight.
+% Lambda is the ridge regression weight.
 %
 %% For PCA, use:
 % L1.PCA(d);
-%% to get d eigenvectors
+% in order to get d eigenvectors.
 %
 %% For Lasso/Group Lasso, use:
 % L1.GroupLasso(Lambda, groups);
+% Note the group Lasso depends on the SLEP sparse learning package
+% downloadable at:
+% http://www.public.asu.edu/~jye02/Software/SLEP/
+% If you want to use it please download the package and add the path to
+% glLeastR to MATLAB paths.
 %% where Lambda is the regularization parameter and groups specify which variates are grouped together. groups = 1:D gives regular LASSO.
 % Currently only Regress supports sparse matrices. Group LASSO supports only dense matrices.
+
+% copyright (c) 2010 - 2012
+% Fuxin Li - fli@cc.gatech.edu
+% Catalin Ionescu - catalin.ionescu@ins.uni-bonn.de
+% Cristian Sminchisescu - cristian.sminchisescu@ins.uni-bonn.de
 
 classdef LinearRegressor_Data < handle
     properties
