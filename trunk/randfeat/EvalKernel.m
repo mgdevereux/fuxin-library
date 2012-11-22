@@ -63,7 +63,6 @@ case {'chi2','exp_chi2'}
     % if the mex file is not available for your architecture
     try 
       K = chi2_mex(samples1',samples2');
-      K = (repmat(sum(samples1,2),1,L2)  + repmat(sum(samples2,2)',L1,1) - K) / 2;
     catch E
       disp(E);
       K = zeros(L1, L2);
