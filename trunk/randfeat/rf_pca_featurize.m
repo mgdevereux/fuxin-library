@@ -33,6 +33,7 @@ function [F, rf_obj] = rf_pca_featurize(rf_obj, x,train_pca, Npcadim, Napp)
         rf_obj.pca_mean = mean(F);
         t = tic();
 % This already uses the economy form
+%        [basisx,~,latent] = princomp(F,'econ');
         basisx = princomp(F);
         disp('PCA time: ');
         toc(t);
@@ -44,6 +45,8 @@ function [F, rf_obj] = rf_pca_featurize(rf_obj, x,train_pca, Npcadim, Napp)
         t = tic();
         F = F - rf_obj.pca_mean(ones(1,size(F,1)),:);
         F = F * rf_obj.pca_basis;
+%        F = bsxfun(@rdivide, F, sqrt(latent'));
+%        rf_obj.to_divide = sqrt(latent');
         disp('Projection time: ');
         toc(t);
         rf_obj.final_dim = Npcadim;
@@ -54,5 +57,6 @@ function [F, rf_obj] = rf_pca_featurize(rf_obj, x,train_pca, Npcadim, Napp)
         end
         F = F - rf_obj.pca_mean(ones(1,size(F,1)),:);
         F = F * rf_obj.pca_basis;
+%        F = bsxfun(@rdivide,F, rf_obj.to_divide);
     end
 end

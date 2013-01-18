@@ -20,10 +20,12 @@ if strcmp(obj.name,'exp_chi2') && ~strcmp(obj.method,'nystrom')
     if isfield(obj,'omega2')
         obj.omega2 = obj.omega2';
     end
-    F = mex_featurize(obj, double(X), Napp)';
-else
-    [N D] = size(X);
-    
+    try
+        F = mex_featurize(obj, double(X), Napp)';
+    catch
+        [N D] = size(X);
+    obj.omega2 = obj.omega2';
+    end
     if isfield(obj,'omega') && Napp > size(obj.omega,2) && strcmp(obj.method,'sampling')
         disp(['Warning: selected number of random features ' num2str(Napp) 'more than built-in number of random features ' num2str(size(obj.omega,2)) '.']);
         disp(['Changing the number of random features to ' num2str(size(obj.omega,2)) '.']);

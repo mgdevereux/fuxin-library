@@ -45,9 +45,7 @@ switch obj.distribution
 %        obj.Nperdim = obj.Nperdim * 2 + 2;
     end
     % Always have omega2 for the second step Gaussian
-    obj.dim * obj.Nperdim
-    obj.Napp
-    obj.omega2 = sqrt(obj.kernel_param) * sqrt(2) * randn(obj.dim*obj.Nperdim+1,obj.Napp);
+    obj.omega2 = sqrt(obj.kernel_param) * randn(obj.dim*obj.Nperdim+1,obj.Napp);
   otherwise
     error('Unknown sampling distribution');
 end
