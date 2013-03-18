@@ -13,6 +13,10 @@
 % 
 % L1 = L1 + LinearRegressor_Data(Input2, Target2);
 %
+% % Training data can also be subtracted out from L1
+%
+% L1 = L1 - LinearRegressor_Data(Input2, Target2);
+%
 % %You may also do a weighted addition since scalar multiplication has also 
 % been implemented:
 %
@@ -22,8 +26,13 @@
 % implemented are ridge regression, group lasso and PCA. 
 %% For least squares/ridge regression, just use:
 %
-% L1.Regress(Lambda);
+% w = L1.Regress(Lambda);
 % Lambda is the ridge regression weight.
+% The first dimension in the resulting weight vector is a constant.
+% Starting from the second dimension it corresponds to dimensions in the
+% input.
+% Therefore, a proper testing procedure for an n*D matrix Input_Test is:
+% ybar = w(1) + Input_Test * w(2:end);
 %
 %% For PCA, use:
 % L1.PCA(d);
@@ -62,6 +71,16 @@ classdef LinearRegressor_Data < handle
 				error('Only supports adding LinearRegressor_Data class objects.');
 			end
         end
+        function obj = minus(obj,B)
+			if strcmp(class(B),'LinearRegressor_Data')
+	            obj.Hessian = obj.Hessian - B.Hessian;
+                obj.FeatSum = obj.FeatSum - B.FeatSum;
+                obj.N = obj.N - B.N;
+                obj.InputTarget = obj.InputTarget - B.InputTarget;
+            else
+				error('Only supports adding LinearRegressor_Data class objects.');
+			end
+        end        
         function obj = mtimes(A,B)
             if strcmp(class(A), 'LinearRegressor_Data')
                 obj = A;
@@ -87,7 +106,7 @@ classdef LinearRegressor_Data < handle
         function obj = LinearRegressor_Data(Input, Target, W)
             [n, d] = size(Input);
             if exist('W','var') && ~isempty(W)
-                disp('Using weights');
+                % disp('Using weights');
                 % Change to column vector
                 if (size(W,2) > size(W,1))
                     W = W';
@@ -119,14 +138,17 @@ classdef LinearRegressor_Data < handle
                 end
             end
             for i=1:size(obj.InputTarget,2)
-                disp(['Regressing the ' int2str(i) '-th output']);
-                t = tic();
+                %disp(['Regressing the ' int2str(i) '-th output']);
+                %t = tic();
                 if issparse(Hes)
                     Weight{i} = bicgstab(Reg_Hes, InputTarget(:,i),1e-6,500);
                 else
                     Weight{i} = Reg_Hes\obj.InputTarget(:,i);
                 end
-                toc(t);
+                %toc(t);
+            end
+            if length(Weight)==1
+                Weight = Weight{1};
             end
         end
         function Weight = GroupLasso(obj, Lambda, groups)
