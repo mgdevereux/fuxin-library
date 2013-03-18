@@ -30,8 +30,16 @@ for i=1:length(in_var_names)
         if tf == false
             if isa(in_var_defaults{i}, 'numeric')
                 in_var_defaults{i} = num2str(in_var_defaults{i});
+            elseif isa(in_var_defaults{i},'char')
+                in_var_defaults{i} = ['''' in_var_defaults{i} ''''];
+            elseif isa(in_var_defaults{i},'logical')
+                if in_var_defaults{i} == true
+                    in_var_defaults{i} = 'true';
+                else
+                    in_var_defaults{i} = 'false';
+                end
             end
-            cmd_txt = [in_var_names{i} ' = ''' in_var_defaults{i} ''''];
+            cmd_txt = [in_var_names{i} ' = ' in_var_defaults{i}];
             evalin('caller', cmd_txt);
         end
     end

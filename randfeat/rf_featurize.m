@@ -36,7 +36,8 @@ if strcmp(obj.name,'exp_chi2') && ~strcmp(obj.method,'nystrom')
     if D ~= obj.dim
         error('Dimension mismatch!');
     end
-    
+end
+    [N D] = size(X);
     switch obj.name
         case 'gaussian'
             F = sqrt(2) * (cos( X * obj.omega(:,1:Napp) + obj.beta(1:Napp,ones(1,N))'*2*pi));
