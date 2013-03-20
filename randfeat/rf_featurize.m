@@ -72,69 +72,29 @@ end
             F = zeros(N, D*obj.Nperdim);
         end
         if strcmp(obj.method, 'signals')
-            try
-                var = load('V_vedaldi.mat');
-                if obj.Nperdim > size(var.V,2)
-                    disp(['Nperdim larger than pre-stored PCA coefficients. Reducing Nperdim to ' num2str(size(V,2)) '.']);
-                    obj.Nperdim = size(var.V,2);
-                end
-                even_odd = zeros(N,199);
-                even_odd(:,2:2:end) = - pi / 2;
-            catch
-                var = [];
-                even_odd = zeros(N,obj.Nperdim-1);
-                even_odd(:,2:2:end) = - pi / 2;
-            end
+            even_odd = zeros(N,obj.Nperdim-1);
+            even_odd(:,2:2:end) = - pi / 2;
             for i = 1: D
               if issparse(X)
                 Xnz = X(:,i) ~= 0;
                 F(Xnz,((i-1)*obj.Nperdim+1):(i*obj.Nperdim)) = sqrt(obj.period) * [sech(0)*sqrt(X(Xnz,i)), ...
                 cos(log(X(Xnz,i))*obj.omega(i,1:(obj.Nperdim-1))+even_odd(Xnz,:)) .* sqrt(2 * X(Xnz,i) * sech(pi * obj.omega(i,1:(obj.Nperdim-1))))];
               else
-                  if ~isempty(var)
-                    ck = sqrt(obj.period) * [sech(0)*sqrt(X(:,i)), ...
-                        cos(log(X(:,i))*obj.omega(i,1:199)+even_odd) .* sqrt(2 * X(:,i) * sech(pi * obj.omega(i,1:199)))];
-                    if issparse(X)
-                        ck = ck * sparse(var.V(:,1:obj.Nperdim));
-                    else
-                        ck = ck * var.V(:,1:obj.Nperdim);
-                    end
-                    F(:,i:D:end) = ck;
-                  else
-                      if obj.Nperdim > 1
+                  if obj.Nperdim > 1
                 F(:,((i-1)*obj.Nperdim+1):(i*obj.Nperdim)) = sqrt(obj.period) * [sech(0)*sqrt(X(:,i)), ...
                 cos(log(X(:,i))*obj.omega(i,1:(obj.Nperdim-1))+even_odd) .* sqrt(2 * X(:,i) * sech(pi * obj.omega(i,1:(obj.Nperdim-1))))];
-                      else
-                          F(:,i) = sqrt(obj.period) * sech(0)*sqrt(X(:,i));
-                      end
+                  else
+                      F(:,i) = sqrt(obj.period) * sech(0)*sqrt(X(:,i));
                   end
               end
             end
         elseif strcmp(obj.method, 'chebyshev')
-            try
-                var = load('V.mat');
-                if obj.Nperdim > size(var.V,2)
-                    disp(['Nperdim larger than pre-stored PCA coefficients. Reducing Nperdim to ' num2str(size(V,2)) '.']);
-                    obj.Nperdim = size(var.V,2);
-                end
-            catch
-                var = [];
-            end
             % compute the coefficients
             % cseries type
             for i = 1:D
                 % for each dimension
                 % Small anyway, sparsify won't hurt
-                if ~isempty(var)
-                    ck = compute_cseries(X(:,i),200);
-                    if issparse(X)
-                        ck = ck * sparse(var.V(:,1:obj.Nperdim));
-                    else
-                        ck = ck * var.V(:,1:obj.Nperdim);
-                    end
-                else
-                    ck = compute_cseries(X(:,i),obj.Nperdim);
-                end
+                ck = compute_cseries(X(:,i),obj.Nperdim);
                 F(:,i:D:end) = ck;
             end
         elseif strcmp(obj.method,'direct')
@@ -153,12 +113,7 @@ end
 %         SF(SF==1) = 0;
         if strcmp(obj.name,'exp_chi2')
 %            F = sqrt(2) * (cos( [F SF] * obj.omega2(1:D*obj.Nperdim+1,1:Napp) + obj.beta(1:Napp,ones(1,N))'*2*pi));
-            if exist('add_LSH','var') && ~isempty(add_LSH) && add_LSH
-                F1 = F * obj.omega2(1:D*obj.Nperdim,1:Napp);
-                F = [sqrt(2) * cos(F1 + obj.beta(1:Napp,ones(1,N))'*2*pi) 2 * sqrt(2)./(1+ exp(-F1(:,1:128))) - sqrt(2)];
-            else
-                F = sqrt(2) * (cos( F * obj.omega2(1:D*obj.Nperdim,1:Napp) + obj.beta(1:Napp,ones(1,N))'*2*pi));
-            end
+            F = sqrt(2) * (cos( F * obj.omega2(1:D*obj.Nperdim,1:Napp) + obj.beta(1:Napp,ones(1,N))'*2*pi));
         end
     case 'chi2_skewed'
         % skewed multiplicative chi-square kernel
