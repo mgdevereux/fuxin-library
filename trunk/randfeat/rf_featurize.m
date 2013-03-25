@@ -63,7 +63,6 @@ end
 %            F = bsxfun(@times,F,weights);
             % Remove weights2 for now it's too small
 %            F = bsxfun(@times,F,weights2);
-        end
     case {'chi2','exp_chi2'}
         % only this fourier analytic treatment no mc estimation yet for chi2
         if issparse(X)
