@@ -17,6 +17,8 @@ function obj = InitExplicitKernel( kernel, alpha, D, Napp, options )
 %                         and Zisserman 2010] type of fixed interval sampling. 
 %                         'sampling' for [Rahimi and Recht 2007] type of 
 %                         Monte Carlo sampling.
+%         options.single: if true, generate random features in single
+%         precision.
 %
 % copyright (c) 2010 
 % Fuxin Li - fuxin.li@ins.uni-bonn.de
@@ -97,7 +99,7 @@ switch kernel
     end
     if strcmp(options.method,'direct')
         if ~isfield(options,'params')
-            disp(['The direct method has a param vector that is best ' ...
+            disp(['The direct method has a parameter vector specified in options.params that is best ' ...
             'estimated from your histogram data using the function decide_parameter_list.m, using default values ' ...
             '(estimated from a 300-dim BOW histogram) now.']);
             options.params = [0.0116 0.0327 0.9016 0.0041 0.0922 0.0015 0.3198 ...

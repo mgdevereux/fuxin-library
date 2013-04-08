@@ -103,7 +103,17 @@ classdef LinearRegressor_Data < handle
         function obj = mrdivide(obj,B)
             obj = mtimes(obj,1./B);
         end
-        function obj = LinearRegressor_Data(Input, Target, W)
+        function obj = prune_targets(obj,to_keep)
+            obj.InputTarget = obj.InputTarget(:,to_keep);
+        end
+        function no_target = no_target(obj)
+            if size(obj.InputTarget,2) == 0
+                no_target = true;
+            else
+                no_target = false;
+            end
+        end
+        function obj = LinearRegressor_Data(Input, Target, W, Hessian)
             [n, d] = size(Input);
             if exist('W','var') && ~isempty(W)
                 % disp('Using weights');
@@ -114,7 +124,11 @@ classdef LinearRegressor_Data < handle
                 Target = bsxfun(@times, Target, sqrt(W));
                 Input = repmat(sqrt(W), 1, d) .* Input;
             end
-            obj.Hessian = Input'*Input;
+            if exist('Hessian','var') && ~isempty(Hessian)
+                obj.Hessian = Hessian;
+            else
+                obj.Hessian = Input'*Input;
+            end
             obj.FeatSum = sum(Input)';
             obj.N = n;
             %    HessiHessian = [BiasVec'*BiasVec BiasVec'*Input; Input'*BiasVec Input'*Input];
@@ -133,20 +147,25 @@ classdef LinearRegressor_Data < handle
             else
                 if ~issparse(Hes)
                     Reg_Hes = Hes + Lambda * eye(d);
+                    % Don't regularize the constant
+                    Reg_Hes(1,1) = Reg_Hes(1,1) - Lambda;
                 else
                     Reg_Hes = Hes + Lambda * speye(d);
+                    Reg_Hes(1,1) = Reg_Hes(1,1) - Lambda;
                 end
             end
-            for i=1:size(obj.InputTarget,2)
+%            for i=1:size(obj.InputTarget,2)
                 %disp(['Regressing the ' int2str(i) '-th output']);
                 %t = tic();
                 if issparse(Hes)
-                    Weight{i} = bicgstab(Reg_Hes, InputTarget(:,i),1e-6,500);
+                    for i=1:size(obj.InputTarget,2)
+                        Weight{i} = bicgstab(Reg_Hes, obj.InputTarget(:,i),1e-6,500);
+                    end
                 else
-                    Weight{i} = Reg_Hes\obj.InputTarget(:,i);
+                    Weight = Reg_Hes\obj.InputTarget;
                 end
                 %toc(t);
-            end
+%            end
             if length(Weight)==1
                 Weight = Weight{1};
             end
