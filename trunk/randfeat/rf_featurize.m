@@ -1,4 +1,4 @@
-function F = rf_featurize(obj, X, Napp, add_LSH)
+function F = rf_featurize(obj, X, Napp)
 %RF_FEATURIZE returns the features corresponding to the inputs X
 %
 % obj   - random feature object initialized by rf_init.

@@ -101,5 +101,11 @@ if (strcmp(options.method,'signals') || strcmp(options.method,'chebyshev')) && (
 else
     obj.final_dim = Napp;
 end
+if isfield(options,'single') && options.single
+    obj.omega = single(obj.omega);
+    obj.beta = single(obj.beta);
+    if isfield(obj,'omega2')
+        obj.omega2 = single(obj.omega2);
+    end
 end
 

@@ -13,7 +13,6 @@ function [d] = lbfgs(g,s,y,Hdiag)
 % Hdiag - value of initial Hessian diagonal elements (scalar)
 
 [p,k] = size(s);
-
 for i = 1:k
     ro(i,1) = 1/(y(:,i)'*s(:,i));
 end
