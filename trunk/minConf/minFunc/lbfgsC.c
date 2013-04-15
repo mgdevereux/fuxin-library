@@ -9,10 +9,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
     /* Variable Declarations */
     
-    double *s, *y, *g, *H, *d, *ro, *alpha, *beta, *q, *r;
+    double *s, *y, *g, *H, *d, *ro, *alpha, *q, *r;
     int nVars,nSteps,lhs_dims[2];
     double temp;
     int i,j;
+    int inca=1, incb = 1;
     
     /* Get Input Pointers */
 	
@@ -29,7 +30,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 	/* Allocated Memory for Function Variables */
     ro = mxCalloc(nSteps,sizeof(double));
 	alpha = mxCalloc(nSteps,sizeof(double));
-	beta = mxCalloc(nSteps,sizeof(double));
 	q = mxCalloc(nVars*(nSteps+1),sizeof(double));
 	r = mxCalloc(nVars*(nSteps+1),sizeof(double));
 	
@@ -84,26 +84,14 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 	for(i=0;i<nSteps;i++)
 	{
 		/* beta(i) = ro(i)*y(:,i)'*r(:,i) */
-		beta[i] = 0;
-		for(j=0;j<nVars;j++)
-		{
-			beta[i] += y[j+nVars*i]*r[j+nVars*i];
-		}
-		beta[i] *= ro[i];
-
+        alpha[i] -= ro[i] * ddot(&nVars, y[nVars*i], &inca, r[nVars*i],&incb);
 		/* r(:,i+1) = r(:,i) + s(:,i)*(alpha(i)-beta(i)) */
-		for(j=0;j<nVars;j++)
-		{
-			r[j+nVars*(i+1)]=r[j+nVars*i]+s[j+nVars*i]*(alpha[i]-beta[i]);
-		}
+        dcopy(&nVars, &r[nVars*i],&inca, &r[nVars*(i+1)], &incb);
+        daxpy(&nVars, &alpha[i], &s[nVars*i], &inca, &r[nVars*(i+1)], &incb);
 	}
 
 	/* d = r(:,k+1) */
-	for(i=0;i<nVars;i++)
-	{
-		d[i]=r[i+nVars*nSteps];
-	}
-
+    dcopy(&nVars, &r[nVars*nSteps], &inca, d, &incb);
 	/* Free Memory */
 	
 	mxFree(ro);
