@@ -106,6 +106,12 @@ classdef LinearRegressor_Data < handle
         function obj = prune_targets(obj,to_keep)
             obj.InputTarget = obj.InputTarget(:,to_keep);
         end
+        function obj = renew_targets(obj, new_InputTarget)
+            if size(new_InputTarget,1) ~= size(obj.Hessian,1)+1
+                error('New InputTarget must have same dimensionality as the original Hessian!');
+            end
+            obj.InputTarget = new_InputTarget;
+        end
         function no_target = no_target(obj)
             if size(obj.InputTarget,2) == 0
                 no_target = true;
@@ -195,13 +201,14 @@ classdef LinearRegressor_Data < handle
 		% Perform PCA on Hessian, Return Mean vector as well
 		function [Basis, Means, Eigenval] = PCA(obj, ndims)
 		% Eigenvectors, I should probably implement a custom version because MATLAB symmetric eigenvalues don't use MKL and is rather slow.
+        % UPDATE: MATLAB fixed that.
             t = tic();
 			Means = obj.FeatSum ./ obj.N;
-			[Basis, Eigenval] = mex_dsyev(obj.Hessian - obj.N .* (Means * Means'));
+			[Basis, Eigenval] = eig(obj.Hessian - obj.N .* (Means * Means'));
             Basis = fliplr(Basis);
             Basis = Basis(:,1:ndims);
             disp('Time for Eigenvectors: ');
             toc(t);
-		end
+        end
     end
 end

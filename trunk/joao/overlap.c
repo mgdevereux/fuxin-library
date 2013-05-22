@@ -11,11 +11,12 @@ Fuxin Li mod Jan 28, 2013, improved speed by 2x by reducing memory references.
 #include <mex.h>
 
 void overlap(unsigned int *intersections, unsigned int *reunions, mxLogical *segms, int nc, int nr) {
-    int i, j, index_ij, index_ik, index_jk, k, res_int, res_uni;
     
 	{
-#pragma omp parallel for private(index_ik, index_jk, index_ij, i, j, k)  
-        for(i=0; i<nc; i++) { /* for each segment */
+#pragma omp parallel for
+        for(int i=0; i<nc; i++) { /* for each segment */
+        {
+            int j, index_ij, index_ik, index_jk, k, res_int, res_uni;
             index_ij = i * (nc +1)+1;
             for(j=i+1; j<nc; j++) { /* go through the others with j>i */
 		index_ik = i*nr;
@@ -32,7 +33,7 @@ void overlap(unsigned int *intersections, unsigned int *reunions, mxLogical *seg
                 reunions[index_ij] = res_uni;
             index_ij++;
             }
-		}
+	}
 	}
   return;
 }
