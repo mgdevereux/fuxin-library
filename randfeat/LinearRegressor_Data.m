@@ -146,6 +146,8 @@ classdef LinearRegressor_Data < handle
                 Lambda = 1e-8*min(diag(Hes));
             end
             d = size(Hes,1);
+            % Try out a parameter that goes higher with more training examples with sqrt(N).
+            Lambda = Lambda * sqrt(obj.N);
             
             Weight = cell(size(obj.InputTarget,2),1);
             if exist('Reg_Mat','var') && ~isempty(Reg_Mat)
