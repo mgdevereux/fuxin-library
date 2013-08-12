@@ -26,23 +26,23 @@ if D ~= obj.dim
 end
 
 % Use mex_featurize if it's exp-chi2 and not Nystrom method.
-if strcmp(obj.name,'exp_chi2') && ~strcmp(obj.method,'nystrom')
-    if isfield(obj,'omega2')
-        obj.omega2 = obj.omega2';
-    end
-    try
-        F = mex_featurize(obj, double(X), Napp)';
-    catch
-        [N D] = size(X);
-    obj.omega2 = obj.omega2';
-    end
-    if isfield(obj,'omega') && Napp > size(obj.omega,2) && strcmp(obj.method,'sampling')
-        disp(['Warning: selected number of random features ' num2str(Napp) 'more than built-in number of random features ' num2str(size(obj.omega,2)) '.']);
-        disp(['Changing the number of random features to ' num2str(size(obj.omega,2)) '.']);
-        disp('You can increase the built-in number in rf_init()');
-        Napp = size(obj.omega,2);
-    end
-end
+% if strcmp(obj.name,'exp_chi2') && ~strcmp(obj.method,'nystrom')
+%     if isfield(obj,'omega2')
+%         obj.omega2 = obj.omega2';
+%     end
+%     try
+%         F = mex_featurize(obj, double(X), Napp)';
+%     catch
+%         [N D] = size(X);
+%     obj.omega2 = obj.omega2';
+%     end
+%     if isfield(obj,'omega') && Napp > size(obj.omega,2) && strcmp(obj.method,'sampling')
+%         disp(['Warning: selected number of random features ' num2str(Napp) 'more than built-in number of random features ' num2str(size(obj.omega,2)) '.']);
+%         disp(['Changing the number of random features to ' num2str(size(obj.omega,2)) '.']);
+%         disp('You can increase the built-in number in rf_init()');
+%         Napp = size(obj.omega,2);
+%     end
+% end
     switch obj.name
         case 'gaussian'
             F = sqrt(2) * (cos( X * obj.omega(:,1:Napp) + obj.beta(1:Napp,ones(1,N))'*2*pi));
