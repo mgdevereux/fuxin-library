@@ -97,7 +97,10 @@ for a = 1:size(font_swap, 2)
 end
 % Swap the fonts
 if ~isempty(font_swap)
-    fonts_size = cell2mat(get(font_handles, 'FontSize'));
+    fonts_size = get(font_handles, 'FontSize');
+    if iscell(fonts_size)
+        fonts_size = cell2mat(fonts_size);
+    end
     M = false(size(font_handles));
     % Loop because some changes may not stick first time, due to listeners
     c = 0;

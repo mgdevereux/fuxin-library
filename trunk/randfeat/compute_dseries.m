@@ -12,7 +12,7 @@ function ds = compute_dseries(x,params)
         params = params';
     end
     starts = 2 * bsxfun(@times, sqrt(params),bsxfun(@rdivide, xx, bsxfun(@plus, xx, params)));
-    prods = bsxfun(@minus, x, params(1:end-1)) ./ bsxfun(@plus, x, params(1:end-1));
-    prods = [ones(size(x,1),1) prods];
+    prods = bsxfun(@minus, xx, params(1:end-1)) ./ bsxfun(@plus, xx, params(1:end-1));
+    prods = [ones(size(xx,1),1) prods];
     ds = cumprod(prods,2).*starts;
 end
